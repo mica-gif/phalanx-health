@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Reports · Phalanx Health{% endblock %}
+{% block tools %}{% include "_tools.html" %}{% endblock %}
+{% block content %}
+<div class="grid2 mb">
+  <div class="card kpi"><span class="cap" style="color:var(--ink)">Visits today</span><div class="big">{{ visits_today }}</div></div>
+  <div class="card kpi"><span class="cap" style="color:var(--ink)">Average wait</span><div class="big">{{ avg_wait }}</div></div>
+  <div class="card kpi"><span class="cap" style="color:var(--ink)">Peak hour</span><div class="big">{{ peak }}</div></div>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0">Visits this week</h2>
+    <div class="no-print" style="display:flex;gap:8px"><a class="out" href="{{ url_for('export_csv') }}">Export CSV</a><button class="out" type="button" onclick="window.print()">Export PDF</button></div></div>
+    <div class="chart sm">{% for h in week_h %}<i style="height:{{ h }}%"></i>{% endfor %}</div><div class="muted small">Mon to Sat</div></div>
+</div>
+<div class="grid2 mb">
+  <section class="card"><h2>Top complaints</h2>
+    {% for l, w in complaints %}<div class="crow">{{ l }}<div class="bar"><i style="width:{{ w }}%"></i></div></div>{% endfor %}</section>
+  <section class="card"><h2>Medicine inventory</h2>
+    {% for m in meds %}<div class="inv">{{ m.name }}<span class="pill sm {{ 'red' if m.qty <= m.low else 'green' }}">{{ 'Low' if m.qty <= m.low else 'OK' }} · {{ m.qty }}</span></div>{% endfor %}</section>
+</div>
+<section class="card"><h2>Activity log</h2>
+  <table><tr><th>When</th><th>Who</th><th>Action</th><th></th></tr>
+  {% for l in logs %}<tr><td>{{ l.ts[5:16] }}</td><td>{{ l.who }}</td><td>{{ l.action }}</td>
+    <td style="text-align:right">{% if l.undo_type and not l.undone and user.role == 'admin' %}<form method="post" action="{{ url_for('restore', lid=l.id) }}"><button class="out">Restore</button></form>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="4" class="muted">No activity yet.</td></tr>{% endfor %}</table></section>
+<section class="card" style="max-width:calc(50% - 8px)"><h2>Role access</h2>
+  <table><tr><th>Role</th><th>Records</th><th>Delete</th><th>Reports</th></tr>
+  <tr><td>Doctor</td><td>Edit</td><td>Cases</td><td>View</td></tr><tr><td>Nurse</td><td>Vitals</td><td>No</td><td>No</td></tr><tr><td>Admin</td><td>All</td><td>All</td><td>All</td></tr></table></section>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Phalanx Health{% endblock %}
+{% block content %}
+<div class="portal">
+  <h1>Student &amp; Staff Portal</h1>
+  <div class="grid2">
+    <form class="card" method="post" action="{{ url_for('login') }}">
+      <span class="cap">Sign in</span>
+      <label class="lbl" for="code">SR-Code or Staff ID</label>
+      <input id="code" name="code" placeholder="e.g. 24-09303 or ADMIN" required autocomplete="username">
+      <label class="lbl" for="pw">Password</label>
+      <input id="pw" name="password" type="password" placeholder="Enter password" required autocomplete="current-password">
+      <div style="height:14px"></div>
+      <button class="btn" type="submit">Authenticate</button>
+    </form>
+    <form class="card" method="post" action="{{ url_for('register') }}">
+      <span class="cap">Student self-registration</span>
+      <label class="lbl" for="rc">SR-Code</label>
+      <input id="rc" name="code" placeholder="e.g. 24-12345" required pattern="\d{2}-\d{5}">
+      <label class="lbl" for="rn">Full name</label>
+      <input id="rn" name="name" placeholder="First Name Last Name" required>
+      <div class="row">
+        <div><label class="lbl" for="ra">Age</label><input id="ra" name="age" type="number" min="1" max="99" placeholder="19"></div>
+        <div><label class="lbl" for="rg">Gender</label><select id="rg" name="gender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+      </div>
+      <label class="lbl" for="regpw">Password</label>
+      <input id="regpw" name="password" type="password" placeholder="Create secure password" required minlength="6" autocomplete="new-password">
+      <div class="pw-hint" id="pwhint">Password strength: medium</div>
+      <label class="agree"><input type="checkbox" name="agree"> I agree to the Data Privacy notice <a href="#" onclick="alert('Your health data is kept confidential and only seen by clinic staff.');return false">[LINK]</a></label>
+      <button class="btn" type="submit">Register Student Account</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

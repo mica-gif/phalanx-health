@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}My history · Phalanx Health{% endblock %}
+{% block tools %}{% include "_tools.html" %}{% endblock %}
+{% block content %}
+{% if is_next %}<div class="flash ok" data-stage="2" data-ahead="0">You are next. Please proceed to the clinic now. (Also sent by SMS or email.)</div>{% endif %}
+<div class="grid2">
+  <section class="card" style="min-height:340px"><h2>My visits</h2>
+    {% for v in visits %}<div class="visit"><div><b>{{ v.date|nicedate }} · {{ v.complaint }}</b><small>{{ v.rx or 'No prescription' }}</small></div>
+      <a class="out" href="{{ url_for('certificate', vid=v.id) }}">Medical certificate</a></div>
+    {% else %}<p class="muted">No visits yet. Your visits will show here after the clinic saves them.</p>{% endfor %}
+  </section>
+  <form class="card" method="post" action="{{ url_for('book') }}"><h2>Book an appointment</h2>
+    <label class="lbl" for="d">Date</label><input id="d" type="date" name="date" required>
+    <div class="slots">{% for s in slots %}<label><input type="radio" name="slot" value="{{ s }}" required>{{ s }}</label>{% endfor %}</div>
+    <label class="lbl" for="reason">Reason</label><input id="reason" name="reason">
+    <div style="height:12px"></div><button class="btn" type="submit">Book appointment</button>
+    <p class="muted small">Walk-in queue stays separate from booked slots.</p>
+    {% for a in appts %}<p class="small"><b>{{ a.date|nicedate }}</b> · {{ a.slot }} · {{ a.reason }}</p>{% endfor %}
+  </form>
+  <form class="card" method="post" action="{{ url_for('profile') }}"><h2>Health profile</h2>
+    <label class="lbl" for="b">Blood type</label><input id="b" name="blood" value="{{ user.blood }}" placeholder="e.g. O+">
+    <label class="lbl" for="al">Allergies</label><input id="al" name="allergies" value="{{ user.allergies }}" placeholder="e.g. Penicillin">
+    <label class="lbl" for="c">Emergency contact</label><input id="c" name="contact" value="{{ user.contact }}" placeholder="Name and number">
+    <div style="height:14px"></div><button class="btn" type="submit">Save profile</button>
+  </form>
+  <section class="card"><h2>Notifications and settings</h2>
+    <div class="setrow">SMS when I am next <button class="toggle {{ '' if user.sms else 'off' }}" data-key="sms" aria-label="SMS"></button></div>
+    <div class="setrow">Email updates <button class="toggle {{ '' if user.email else 'off' }}" data-key="email" aria-label="Email"></button></div>
+    <div class="setrow">Large text <button class="out" id="largeBtn" type="button">Off</button></div>
+    <p class="muted small">Your health data is kept confidential. <a href="#" onclick="alert('Only clinic staff can see your health data.');return false">[PRIVACY NOTICE LINK]</a></p>
+  </section>
+</div>
+{% endblock %}

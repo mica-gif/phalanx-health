@@ -1,0 +1,5 @@
+{% import "_icons.html" as i %}
+<div class="brow"><span class="ico r">{{ i.flame() }}</span>
+  <div class="t"><span class="cap" style="color:var(--red)">Emergency priority</span>{{ board.e_line }}</div><span class="n">{{ board.e_count }}</span></div>
+<div class="brow"><span class="ico b">{{ i.clock() }}</span>
+  <div class="t"><span class="cap" style="color:var(--blue)">Routine queue</span>{{ board.r_line }}</div><span class="n">{{ board.r_count }}</span></div>

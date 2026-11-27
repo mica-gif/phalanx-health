@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Phalanx Health{% endblock %}</title>
+<link rel="icon" href="{{ url_for('static', filename='logo.png') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t;if(localStorage.getItem('large')==='1')document.documentElement.classList.add('large')}catch(e){}</script>
+</head>
+<body>
+{% set ep = request.endpoint %}
+<header class="topbar">
+  <a class="brand" href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='logo.png') }}" alt="Phalanx Health logo"><span>PHALANX HEALTH</span></a>
+  {% if user and user.role == 'student' %}
+  <nav class="nav">
+    <a href="{{ url_for('checkin') }}" class="{{ 'active' if ep == 'checkin' }}">Check-in</a>
+    <a href="{{ url_for('board') }}" class="{{ 'active' if ep == 'board' }}">Live board</a>
+    <a href="{{ url_for('history') }}" class="{{ 'active' if ep == 'history' }}">My history</a>
+  </nav>
+  {% elif user %}
+  <nav class="nav">
+    <a href="{{ url_for('dashboard') }}" class="{{ 'active' if ep == 'dashboard' }}">Dashboard</a>
+    {% if nav == 'work' %}
+      <a href="{{ url_for('record_home') }}" class="{{ 'active' if ep == 'record' }}">Record</a>
+      {% if user.role != 'nurse' %}<a href="{{ url_for('reports') }}" class="{{ 'active' if ep == 'reports' }}">Reports</a>{% endif %}
+    {% else %}
+      <a href="{{ url_for('dashboard') }}#directory">Directory</a>
+      <a href="{{ url_for('dashboard') }}#benchmark">Benchmark</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+  <div class="actions">
+    {% block tools %}{% endblock %}
+    {% if user and user.role == 'student' and ep != 'history' %}<span class="avatar">{{ user.name[0]|upper }}</span>
+    {% elif user and user.role == 'admin' %}{% if ep == 'reports' %}<a class="badge" href="{{ url_for('logout') }}" title="Sign out">ADMIN</a>{% else %}<span class="badge">ADMIN</span>{% endif %}
+    {% elif user %}<span class="badge">{{ user.name }} (STAFF)</span>{% endif %}
+    {% if user and user.role == 'admin' and ep == 'reports' %}{# the design shows only the ADMIN badge here; clicking it signs out #}
+    {% elif user %}<a class="tbtn" href="{{ url_for('logout') }}">Sign out</a>
+    {% else %}<a class="tbtn" href="{{ url_for('login') }}">Sign In / Register</a>{% endif %}
+  </div>
+</header>
+<main class="wrap">
+  {% for cat, msg in get_flashed_messages(with_categories=true) %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+  {% block content %}{% endblock %}
+</main>
+<footer class="footer">PHALANX HEALTH • CpE 411 Data Structures and Algorithms • Batangas State University Alangilan</footer>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

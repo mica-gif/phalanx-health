@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% import "_icons.html" as i %}
+{% block title %}Check-in · Phalanx Health{% endblock %}
+{% block content %}
+<section class="hero">
+  <div><h1><span>Good day</span>, {{ greeting }}</h1>
+  <p>Describe how you feel and join the queue. Emergencies are always called first, and your details stay confidential.</p></div>
+  <div class="wait">{{ i.pulse() }}~{{ est }} min wait</div>
+</section>
+{% if st %}
+<section class="card ticket" data-stage="{{ st.stage }}" data-ahead="{{ st.ahead }}">
+  <div class="ticket-top"><div><span class="cap">Your ticket</span><div class="ticket-no">{{ st.t|tno }}</div></div>
+    <form method="post" action="{{ url_for('leave') }}" class="leave"><span class="muted small">Changed your mind?</span>
+      <button class="out red" type="submit">{{ i.trash() }} <span>Leave queue</span></button></form></div>
+  <div class="steps">
+    <div class="step done"><b>✓</b>Checked in</div>
+    <div class="step {{ 'now' if st.stage == 2 else 'done' }}"><b>{{ '✓' if st.stage > 2 else 2 }}</b>Waiting · {{ st.ahead }} ahead</div>
+    <div class="step {{ 'now' if st.stage == 3 }}"><b>3</b>Called</div>
+    <div class="step"><b>4</b>Seen</div>
+  </div>
+  <div class="progress"><i style="width:{{ {2:40, 3:70}[st.stage] }}%"></i></div>
+</section>
+{% endif %}
+<div class="grid3">
+  <form class="card" method="post">
+    <h2>Clinic check-in</h2>
+    <label class="lbl" for="complaint">Symptoms / medical complaint</label>
+    <textarea id="complaint" name="complaint" placeholder="Describe symptoms (e.g. severe chest pain, dizziness, mild cough)" required></textarea>
+    <div class="quick">Quick picks <button type="button">Fever</button><button type="button">Headache</button><button type="button">Cough</button><button type="button">Injury</button></div>
+    <div class="muted small" style="margin-bottom:12px">Words like chest pain suggest Emergency.</div>
+    <div class="lbl">Urgency level</div>
+    <label class="opt"><input type="radio" name="urgency" value="routine" checked><span><b>Routine</b><small>Check or consultation</small></span></label>
+    <label class="opt em"><input type="radio" name="urgency" value="emergency" id="urg-em"><span><b>Emergency</b><small>Severe or urgent</small></span></label>
+    <button class="btn" type="submit">Join Medical Queue</button>
+  </form>
+  {% include "_boardcard.html" %}
+</div>
+{% endblock %}

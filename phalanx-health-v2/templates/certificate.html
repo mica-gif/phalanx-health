@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Medical certificate{% endblock %}
+{% block content %}
+<div class="cert">
+  <h1>Medical Certificate</h1>
+  <p>This is to certify that <b>{{ v.name }}</b> ({{ v.code }}), {{ v.age }} years old, was seen at the
+  Phalanx Health clinic of Batangas State University Alangilan on <b>{{ v.date|nicedate }}</b> for
+  <b>{{ v.complaint }}</b>{% if v.diagnosis %} (diagnosis: {{ v.diagnosis }}){% endif %}.</p>
+  {% if v.followup %}<p>Follow-up: {{ v.followup }}</p>{% endif %}
+  <p style="margin-top:60px">______________________<br>Attending clinic physician</p>
+</div>
+<p style="text-align:center" class="no-print"><button class="out" onclick="window.print()">Print certificate</button></p>
+{% endblock %}

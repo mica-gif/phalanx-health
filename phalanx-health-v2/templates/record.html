@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ s.name }} · Phalanx Health{% endblock %}
+{% block content %}
+<section class="card record-head">
+  <div class="who"><span class="avatar">{{ s.name[0]|upper }}</span>
+    <div><h1>{{ s.name }}</h1><div class="muted small">{{ s.code }} · {{ s.age }} · {{ s.gender }}</div>
+    <div class="tags"><span class="pill blue sm">Blood: {{ s.blood or '—' }}</span><span class="pill red sm">Allergies: {{ s.allergies or '—' }}</span><span class="pill green sm">Contact: {{ s.contact or '—' }}</span></div></div></div>
+  {% if t %}<div class="suggest">
+    <b>Suggested priority: {{ 'Emergency' if kw else 'Routine' }}</b>
+    <small>{% if kw %}Keyword found: “{{ kw }}”. Staff confirms.{% else %}No emergency keyword found. Staff confirms.{% endif %}</small>
+    <form method="post" action="{{ url_for('ticket_action', tid=t.id, action='accept' if kw else 'override') }}"><button class="out">Accept</button></form>
+    <form method="post" action="{{ url_for('ticket_action', tid=t.id, action='override' if kw else 'accept') }}"><button class="out">Override</button></form>
+  </div>{% endif %}
+</section>
+<section class="card"><span class="cap" style="color:var(--ink)">Queue controls</span>
+  <div class="qc">
+    {% if t %}
+    <form method="post" action="{{ url_for('ticket_action', tid=t.id, action='call') }}"><button class="out fill">Call</button></form>
+    <form method="post" action="{{ url_for('ticket_action', tid=t.id, action='hold') }}"><button class="out">Hold</button></form>
+    <form method="post" action="{{ url_for('ticket_action', tid=t.id, action='skip') }}"><button class="out">Skip</button></form>
+    <form method="post" action="{{ url_for('ticket_action', tid=t.id, action='recall') }}"><button class="out">Recall</button></form>
+    <form method="post" action="{{ url_for('ticket_action', tid=t.id, action='transfer') }}"><button class="out">Transfer</button></form>
+    <form method="post" action="{{ url_for('ticket_action', tid=t.id, action='noshow') }}"><button class="out red">Mark no-show · <span id="noshow-timer">02:00</span></button></form>
+    {% else %}<span class="muted small">This student has no active ticket in the queue.</span>{% endif %}
+  </div></section>
+<div class="grid2">
+  <form class="card" method="post"><h2>Consultation</h2>
+    {% if readonly %}<p class="muted small">Nurse access: vitals only.</p>{% endif %}
+    <div class="row"><div><label class="lbl">Temp (C)</label><input name="temp" placeholder="36.5"></div><div><label class="lbl">Blood pressure</label><input name="bp" placeholder="120/80"></div></div>
+    <div class="row"><div><label class="lbl">Pulse</label><input name="pulse" placeholder="72"></div><div><label class="lbl">SpO2 (%)</label><input name="spo2" placeholder="98"></div></div>
+    <label class="lbl">Diagnosis</label><input name="diagnosis" {{ 'disabled' if readonly }}>
+    <label class="lbl">Notes</label><textarea name="notes" class="notes" rows="3" {{ 'disabled' if readonly }}></textarea>
+    <div class="row"><div><label class="lbl">Prescription</label>
+      <select name="rx" id="rx" {{ 'disabled' if readonly }}><option value="">No prescription</option>
+        {% for m in meds %}<option value="{{ m.name }}" data-low="{{ 1 if m.qty <= m.low else 0 }}">{{ m.name }}</option>{% endfor %}</select></div>
+      <div><label class="lbl">Follow-up date</label><input type="date" name="followup"></div></div>
+    <span class="pill red sm" id="lowstock" hidden style="margin:8px 0 0">Low stock</span>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn sm" name="action" value="save">Save record</button>
+      {% if not readonly %}<button class="out" name="action" value="cert">Issue medical certificate</button>{% endif %}</div>
+  </form>
+  <section class="card"><h2>Visit history</h2>
+    <div class="timeline">{% for v in visits %}<div><b>{{ v.date|nicedate }} · {{ v.complaint }}</b>
+      <small>{{ v.rx or 'No prescription' }}{% if v.followup %} · {{ 'follow-up done' if v.followup == 'done' else 'follow-up ' + v.followup }}{% endif %}</small></div>
+      {% else %}<div class="muted">No visits yet.</div>{% endfor %}</div>
+    <span class="cap" style="color:var(--ink)">Activity log</span>
+    <div class="logline">{{ user.name.split(',')[0] }} opened this record · {{ opened[11:16] }}</div>
+    {% for a in activity %}<div class="logline">{{ a.action }} · {{ a.ts[11:16] }}</div>{% endfor %}
+  </section>
+</div>
+{% endblock %}

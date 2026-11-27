@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% import "_icons.html" as i %}
+{% block title %}Dashboard · Phalanx Health{% endblock %}
+{% block content %}
+<section class="hero">
+  <div><h1><span>Good day</span>, {{ greeting }}</h1>
+  <p>{{ e }} emergency and {{ r }} routine cases are waiting. Emergency cases are always called first.</p></div>
+  <div class="btns">
+    <form method="post" action="{{ url_for('call_next', kind='emergency') }}"><button>Call Emergency</button></form>
+    <form method="post" action="{{ url_for('call_next', kind='routine') }}"><button>Call Routine</button></form>
+  </div>
+</section>
+<div class="grid3 mb">
+  {% set tot = (e + r) or 1 %}
+  <div class="card stat"><div class="top"><span class="ico r">{{ i.flame() }}</span><span class="cap" style="color:var(--red)">Emergency queue</span></div>
+    <div class="num">{{ e }}</div><div class="bar"><i style="width:{{ (e/tot*100)|round }}%;background:var(--red)"></i></div></div>
+  <div class="card stat"><div class="top"><span class="ico b">{{ i.clock() }}</span><span class="cap" style="color:var(--blue)">Routine queue</span></div>
+    <div class="num">{{ r }}</div><div class="bar"><i style="width:{{ (r/tot*100)|round }}%;background:var(--blue)"></i></div></div>
+  <div class="card stat"><div class="top"><span class="ico g">{{ i.users() }}</span><span class="cap">Student directory</span></div>
+    <div class="num">{{ total_students }}</div><div class="muted small">registered students</div></div>
+</div>
+<section class="card"><h2>Triage queue breakdown</h2>
+  {% for t in tickets %}
+  <div class="trow"><span class="avatar">{{ t.name[0] }}</span>
+    <div class="info-t"><b>{{ t|tno }} · {{ t.name }}</b>
+      <span class="pill sm {{ 'red' if t.kind == 'emergency' else 'blue' }}">{{ t.kind|capitalize }}</span>
+      {% if t.status != 'waiting' %}<span class="pill sm green">{{ t.status|capitalize }}</span>{% endif %}
+      <div>{{ t.complaint }}</div></div>
+    <div class="acts">
+      <form method="post" action="{{ url_for('ticket_action', tid=t.id, action='call') }}"><button class="out">Call</button></form>
+      <form method="post" action="{{ url_for('ticket_action', tid=t.id, action='done') }}"><button class="out">Done</button></form>
+      {% if user.role in ('doctor','admin') %}<form method="post" action="{{ url_for('ticket_action', tid=t.id, action='remove') }}"><button class="out red icon" aria-label="Remove case">{{ i.trash() }}</button></form>{% endif %}
+    </div></div>
+  {% else %}<p class="muted">No one is waiting. New check-ins will appear here.</p>{% endfor %}
+  {% if undo %}<div class="toast">Case removed from the queue.
+    <form method="post" action="{{ url_for('ticket_action', tid=undo, action='undo') }}"><button>Undo</button></form></div>{% endif %}
+</section>
+<div class="grid2">
+  <section class="card" id="directory"><h2>Student directory</h2>
+    <form method="get" action="{{ url_for('dashboard') }}#directory"><label class="lbl" for="q" style="margin-top:0">Search</label>
+      <input id="q" name="q" value="{{ q }}" placeholder="SR-Code or student name"></form>
+    {% for s in students %}
+    <div class="trow"><span class="avatar">{{ s.name[0] }}</span>
+      <div class="info-t"><b>{{ s.code }}</b><div>{{ s.name }} ({{ s.age }})</div></div>
+      <div class="acts"><a class="out" href="{{ url_for('record', uid=s.id) }}">Record</a>
+        {% if user.role in ('admin','doctor') %}<button class="out red icon" type="button" data-confirm="{{ s.id }}" aria-label="Delete student">{{ i.trash() }}</button>{% endif %}</div></div>
+    {% if user.role in ('admin','doctor') %}
+    <div class="confirm" id="confirm-{{ s.id }}" hidden>Delete {{ s.code }} and their records?
+      <div class="acts"><button class="out" type="button" data-cancel>Cancel</button>
+        <form method="post" action="{{ url_for('delete_student', uid=s.id) }}"><button class="out red">Yes, delete</button></form></div></div>{% endif %}
+    {% else %}<p class="muted">No students match your search.</p>{% endfor %}
+  </section>
+  <section class="card"><h2>Queue load today</h2>
+    <div class="chart">{% for h in load %}<i style="height:{{ h }}%"></i>{% endfor %}</div>
+    <div class="muted small">Check-ins over the last 6 days.</div></section>
+</div>
+<section class="card" id="benchmark" style="max-width:calc(50% - 8px)"><h2>Benchmark</h2>
+  <p class="muted small">Compare queue structures from CpE 411.</p>
+  <button class="btn" id="benchBtn" type="button">Run Benchmark</button>
+  <p class="small" id="benchOut">Results: run the benchmark to see timings.</p></section>
+{% endblock %}
